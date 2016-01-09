@@ -2,9 +2,10 @@ package ThreadPerClientServer;
 
 
 	
+	import bgu.spl.SPL3_server.ConnectionHandler;
 	import bgu.spl.SPL3_server.ServerData;
 	import bgu.spl.SPL3_server.ServerProtocolFactory;
-	import bgu.spl.SPL3_server.ServerProtocolFactoryImpl;
+	import reactor.AsyncServerProtocolFactoryImpl;
 	import org.json.simple.parser.ParseException;
 
 	import java.io.*;
@@ -38,7 +39,7 @@ package ThreadPerClientServer;
 			while (true)
 			{
 				try {
-					ConnectionHandler newConnection = new ConnectionHandler(serverSocket.accept(), factory.create());
+					ConnectionHandler newConnection = new ConnectionHandlerThreadPerClient(serverSocket.accept(), factory.create());
 	            new Thread(newConnection).start();
 				}
 				catch (IOException e)

@@ -1,19 +1,22 @@
 package bgu.spl.SPL3_server;
 
+
+import java.util.HashSet;
 import java.util.Set;
 
 public class Room implements Runnable {
     private String roomName;
-    private Set<ServerProtocolImpl> users;
+    private Set<ServerProtocol> users;
     private boolean isActive;
 
-    public Room(String roomName, Set<ServerProtocolImpl> users, boolean isActive) {
+    public Room(String roomName, boolean isActive) {
         this.roomName = roomName;
         this.users = users;
         this.isActive = isActive;
+        users=new HashSet<>();
     }
 
-    public void add(ServerProtocolImpl user){
+    public void add(ServerProtocol user){
         users.add(user);
 
     }
@@ -22,7 +25,7 @@ public class Room implements Runnable {
         return roomName;
     }
 
-    public Set<ServerProtocolImpl> getUsers() {
+    public Set<ServerProtocol> getUsers() {
         return users;
     }
 
@@ -34,7 +37,7 @@ public class Room implements Runnable {
         this.roomName = roomName;
     }
 
-    public void setUsers(Set<ServerProtocolImpl> users) {
+    public void setUsers(Set<ServerProtocol> users) {
         this.users = users;
     }
 
@@ -47,8 +50,8 @@ public class Room implements Runnable {
         }
     }
 
-    public void sendMSG(String message,ServerProtocolImpl sender){
-        for (ServerProtocolImpl user : users
+    public void sendMSG(String message,ServerProtocol sender){
+        for (ServerProtocol user : users
                 ) {
             if(user!=sender){
                 user.getConnectionHandler().sendMessage("new message from " + sender.getName() +": "+message,null,null);
@@ -66,7 +69,7 @@ public class Room implements Runnable {
         {
             Question q=ServerData.instance.getQuestion();
             Object lockedObj=new Object();
-            for (ServerProtocolImpl protocol:users) {
+            for (ServerProtocol protocol:users) {
                 protocol.getConnectionHandler().sendMessage("ASKTXT "+q.getQuestion(),"TXTRESP",(String ans)->{
                     q.addAnswer(ans,protocol);
                     synchronized (lockedObj){
@@ -85,7 +88,7 @@ public class Room implements Runnable {
                     e.printStackTrace();
                 }
             }
-            for (ServerProtocolImpl protocol:users) {
+            for (ServerProtocol protocol:users) {
                 protocol.getConnectionHandler().sendMessage("ASKCHOICES "+q.getAnswerShuffle(),"SELECTRESP",(String ans)->{
                     q.selectAnswer(Integer.parseInt(ans.trim()),protocol);
                     synchronized (lockedObj){
@@ -120,7 +123,7 @@ public class Room implements Runnable {
             }
         }
         isActive=false;
-        for(ServerProtocolImpl user : users) {
+        for(ServerProtocol user : users) {
             ServerData.instance.getUsuer2room().replace(user.getName(),null);
         }
         users.clear();

@@ -1,7 +1,6 @@
 package bgu.spl.SPL3_server;
 
 
-import ThreadPerClientServer.ConnectionHandler;
 import ThreadPerClientServer.ProtocolCallback;
 
 /**
@@ -28,11 +27,11 @@ otherwise
 
 boolean isEnd ( T msg ) ;
 
-//to delete
-String processMessage(String msg);
 
 void setConnection(ConnectionHandler connection);
 ConnectionHandler getConnectionHandler();
     void addPoints(int points);
     int getPoints();
+    String getName();
+    void setName(String name);
 }

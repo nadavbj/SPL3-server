@@ -1,12 +1,12 @@
-package bgu.spl.SPL3_server;
+package ThreadPerClientServer;
 
-import ThreadPerClientServer.ConnectionHandler;
-import ThreadPerClientServer.ProtocolCallback;
+
+import bgu.spl.SPL3_server.*;
 
 import java.io.IOException;
 import java.util.HashSet;
 
-public class ServerProtocolImpl implements ServerProtocol<String>  {
+public class ServerProtocolImpl implements ServerProtocol<String> {
 
 	private String name;
 	private int points=0;
@@ -25,10 +25,7 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 
 
 
-	public String processMessage(String msg) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+
 
 	@Override
 	public void setConnection(ConnectionHandler connection) {
@@ -89,7 +86,7 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 				}
 				//the room doesn't exist, will open a new one
 				else{
-					Room newRoom= new Room(msg.substring(join.length()+1), new HashSet<ServerProtocolImpl>(), false);
+					Room newRoom= new Room(msg.substring(join.length()+1), false);
 					ServerData.instance.getRoomName2room().put(msg.substring(join.length()+1), newRoom);
 					ServerData.instance.getRoomName2room().get(msg.substring(join.length()+1)).add(this);
 					ServerData.instance.getUsuer2room().replace(name, newRoom);
@@ -111,7 +108,7 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 
 			if (msg.startsWith(start)){
 				points=0;
-				if (msg.substring(start.length()+1+1).equals("BLUFFER")){
+				if (msg.substring(start.length()+1).equals("BLUFFER")){
 					ServerData.instance.getUsuer2room().get(name).userHittedStart();
 					String roomName= ServerData.instance.getUsuer2room().get(name).getRoomName();
 					//TODO:ServerData.instance.getRoomName2room().get(roomName).setActive();
@@ -138,6 +135,6 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 	@Override
 	public boolean isEnd(String msg) {
 		// TODO Auto-generated method stub
-		return false;
+		return msg.equals("QUIT");
 	}
 }

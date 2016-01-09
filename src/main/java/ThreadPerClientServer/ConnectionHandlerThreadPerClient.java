@@ -11,7 +11,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConnectionHandler implements Runnable {
+public class ConnectionHandlerThreadPerClient  implements bgu.spl.SPL3_server.ConnectionHandler {
 
 	private BufferedReader in;
 	private PrintWriter out;
@@ -19,7 +19,7 @@ public class ConnectionHandler implements Runnable {
 	ServerProtocol protocol;
 	private Map<String, ProtocolCallback> responsesCallBacks;
 
-	public ConnectionHandler(Socket acceptedSocket, ServerProtocol p)
+	public ConnectionHandlerThreadPerClient(Socket acceptedSocket, ServerProtocol p)
 	{
 		in = null;
 		out = null;
@@ -33,9 +33,6 @@ public class ConnectionHandler implements Runnable {
 
 	public void run()
 	{
-
-		String msg;
-
 		try {
 			initialize();
 		}
@@ -52,14 +49,13 @@ public class ConnectionHandler implements Runnable {
 
 		System.out.println("Connection closed - bye bye...");
 		close();
-
 	}
 
 	public void process() throws IOException
 	{
 		String msg;
 
-		while ((msg = in.readLine()) != null && !msg.equals("QUIT"))
+		while ((msg = in.readLine()) != null )
 		{
 			msg=msg.trim();
 			System.out.println("Received \"" + msg + "\" from client");
@@ -94,6 +90,11 @@ public class ConnectionHandler implements Runnable {
 		out.println(message);
 		if(responseCommannd!=null)
 			responsesCallBacks.put(responseCommannd,callback);
+	}
+
+	@Override
+	public Map<String, ProtocolCallback> getResponsesCallBacks() {
+		return responsesCallBacks;
 	}
 
 	// Starts listening
