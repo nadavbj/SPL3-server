@@ -10,13 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 class ConnectionHandler implements Runnable {
-	
+
 	private BufferedReader in;
 	private PrintWriter out;
 	Socket clientSocket;
 	ServerProtocol protocol;
 	private Map<String, ProtocolCallback> responsesCallBacks;
-	
+
 	public ConnectionHandler(Socket acceptedSocket, ServerProtocol p)
 	{
 		in = null;
@@ -28,12 +28,12 @@ class ConnectionHandler implements Runnable {
 		System.out.println("The client is from: " + acceptedSocket.getInetAddress() + ":" + acceptedSocket.getPort());
 		responsesCallBacks=new HashMap();
 	}
-	
+
 	public void run()
 	{
 
 		String msg;
-		
+
 		try {
 			initialize();
 		}
@@ -43,26 +43,29 @@ class ConnectionHandler implements Runnable {
 
 		try {
 			process();
-		} 
+		}
 		catch (IOException e) {
 			System.out.println("Error in I/O");
-		} 
-		
+		}
+
 		System.out.println("Connection closed - bye bye...");
 		close();
 
 	}
-	
+
 	public void process() throws IOException
 	{
 		String msg;
-		
+
 		while ((msg = in.readLine()) != null && !msg.equals("QUIT"))
 		{
 			msg=msg.trim();
-
 			System.out.println("Received \"" + msg + "\" from client");
-			String command=msg.substring(0,msg.indexOf(" "));
+			String command;
+			if(msg.contains(" "))
+				command=msg.substring(0,msg.indexOf(" "));
+			else
+				command=msg;
 			if(responsesCallBacks.containsKey(command)){
 				responsesCallBacks.get(command).sendMessage(msg.substring(msg.indexOf(" ")));
 				responsesCallBacks.remove(command);
@@ -77,7 +80,7 @@ class ConnectionHandler implements Runnable {
 				}
 			}
 
-			
+
 		}
 
 	}
@@ -90,7 +93,7 @@ class ConnectionHandler implements Runnable {
 		if(responseCommannd!=null)
 			responsesCallBacks.put(responseCommannd,callback);
 	}
-	
+
 	// Starts listening
 	public void initialize() throws IOException
 	{
@@ -99,7 +102,7 @@ class ConnectionHandler implements Runnable {
 		out = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream(),"UTF-8"), true);
 		System.out.println("I/O initialized");
 	}
-	
+
 	// Closes the connection
 	public void close()
 	{
@@ -112,7 +115,7 @@ class ConnectionHandler implements Runnable {
 			{
 				out.close();
 			}
-			
+
 			clientSocket.close();
 		}
 		catch (IOException e)
@@ -120,5 +123,5 @@ class ConnectionHandler implements Runnable {
 			System.out.println("Exception in closing I/O");
 		}
 	}
-	
+
 }

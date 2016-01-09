@@ -19,6 +19,8 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 	private final String join="JOIN";
 	private final String start="STARTGAME";
 	private final String ASKTXT="ASKTXT";
+	private final String MSG="MSG";
+
 
 
 	public String processMessage(String msg) {
@@ -55,12 +57,12 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 			/** NICK  **/
 			if(msg.startsWith(nick)) 
 				//the user is already in use
-				if (ServerData.instance.getUsuer2room().containsKey(msg.substring(5))){
-					callback.sendMessage("SYSMSG NICK REJECTED, "+ msg.substring(5)+ " is already in use");
+				if (ServerData.instance.getUsuer2room().containsKey(msg.substring(nick.length()+1))){
+					callback.sendMessage("SYSMSG NICK REJECTED, "+ msg.substring(nick.length()+1)+ " is already in use");
 				}
 			//Creates a new user
 				else {
-					setName(msg.substring(5));
+					setName(msg.substring(nick.length()+1));
 					callback.sendMessage("SYSMSG NICK ACCEPTED");}
 
 
@@ -73,38 +75,56 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 				}
 
 				//the room is already active
-				else if ((ServerData.instance.getRoomName2room().containsKey(msg.substring(5))) &&(ServerData.instance.getRoomName2room().get(msg.substring(5)).isActive()) ){
-					callback.sendMessage("SYSMSG JOIN REJECTED, "+msg.substring(5)+ "is already active");
+				else if ((ServerData.instance.getRoomName2room().containsKey(msg.substring(join.length()+1))) &&(ServerData.instance.getRoomName2room().get(msg.substring(join.length()+1)).isActive()) ){
+					callback.sendMessage("SYSMSG JOIN REJECTED, "+msg.substring(join.length()+1)+ "is already active");
 				}
 				//the room is already exist, and not active
-				else if ((ServerData.instance.getRoomName2room().containsKey(msg.substring(5))) && !(ServerData.instance.getRoomName2room().get(msg.substring(5)).isActive()) ){
-					ServerData.instance.getRoomName2room().get(msg.substring(5)).add(this);
-					ServerData.instance.getUsuer2room().replace(name, ServerData.instance.getRoomName2room().get(msg.substring(5)));
+				else if ((ServerData.instance.getRoomName2room().containsKey(msg.substring(join.length()+1))) && !(ServerData.instance.getRoomName2room().get(msg.substring(join.length()+1)).isActive()) ){
+					ServerData.instance.getRoomName2room().get(msg.substring(join.length()+1)).add(this);
+					ServerData.instance.getUsuer2room().replace(name, ServerData.instance.getRoomName2room().get(msg.substring(join.length()+1)));
 					//ServerData.instance.getRoom2users().
 					callback.sendMessage("SYSMSG JOIN ACCEPTED");
 				}
 				//the room doesn't exist, will open a new one
 				else{
-					Room newRoom= new Room(msg.substring(5), new HashSet<ServerProtocolImpl>(), false);
-					ServerData.instance.getRoomName2room().put(msg.substring(5), newRoom);
-					ServerData.instance.getRoomName2room().get(msg.substring(5)).add(this);
+					Room newRoom= new Room(msg.substring(join.length()+1), new HashSet<ServerProtocolImpl>(), false);
+					ServerData.instance.getRoomName2room().put(msg.substring(join.length()+1), newRoom);
+					ServerData.instance.getRoomName2room().get(msg.substring(join.length()+1)).add(this);
 					ServerData.instance.getUsuer2room().replace(name, newRoom);
 					callback.sendMessage("SYSMSG JOIN ACCEPTED");
 				}
+
 			}
+
+			/** LISTGAMES  **/
+		if (msg.equals("LISTGAMES")){
+			callback.sendMessage("SYSMSG LISTGAMES ACCEPTED: 1.BLUFFER");
+		}
+
+
+
 
 			/** STARTGAME  **/
 
 
 			if (msg.startsWith(start)){
 				points=0;
-				if (msg.substring(10).equals("BLUFFER")){
+				if (msg.substring(start.length()+1).equals("BLUFFER")){
 					ServerData.instance.getUsuer2room().get(name).userHittedStart();
 					String roomName= ServerData.instance.getUsuer2room().get(name).getRoomName();
 					//TODO:ServerData.instance.getRoomName2room().get(roomName).setActive();
 					callback.sendMessage("SYSMSG STARTGAME ACCEPTED");
 				}
 				else callback.sendMessage("SYSMSG STARTGAME REJECTED, "+ "we don't have the game " + msg.substring(9));
+			}
+
+			if(msg.startsWith(MSG)){
+				String m= msg.substring(MSG.length()+1);
+				if(ServerData.instance.getUsuer2room().get(name)!=null){
+					ServerData.instance.getUsuer2room().get(name).sendMSG(m,this);
+				}
+
+
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

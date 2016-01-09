@@ -49,6 +49,18 @@ public class Room implements Runnable {
         }
     }
 
+    public void sendMSG(String message,ServerProtocolImpl sender){
+        for (ServerProtocolImpl user : users
+                ) {
+            if(user!=sender){
+                user.getConnectionHandler().sendMessage("new message from " + sender.getName() +": "+message,null,null);
+            }
+
+        }
+
+
+    }
+
 
     @Override
     public void run() {

@@ -7,31 +7,7 @@ package ThreadPerClientServer;
 	import java.io.*;
 	import java.net.*;
 
-	
 
-/*
-	class EchoProtocol implements ServerProtocol {
-			
-		public EchoProtocol() { }
-		
-		public String processMessage(String msg)
-		{
-			return msg;
-		}
-		
-		public boolean isEnd(String msg)
-		{
-			return msg.equals("bye");
-		}
-	}
-
-	class EchoProtocolFactory implements ServerProtocolFactory {
-		public ServerProtocol create(){
-			return new EchoProtocol();
-		}
-	}
-
-	*/
 	
 	class MultipleClientProtocolServer implements Runnable {
 		private ServerSocket serverSocket;
