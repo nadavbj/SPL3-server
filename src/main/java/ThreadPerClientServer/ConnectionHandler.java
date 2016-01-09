@@ -1,5 +1,7 @@
 package ThreadPerClientServer;
 
+import bgu.spl.SPL3_server.ServerProtocol;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,7 +11,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-class ConnectionHandler implements Runnable {
+public class ConnectionHandler implements Runnable {
 
 	private BufferedReader in;
 	private PrintWriter out;

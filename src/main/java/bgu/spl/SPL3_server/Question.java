@@ -1,4 +1,4 @@
-package ThreadPerClientServer;
+package bgu.spl.SPL3_server;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

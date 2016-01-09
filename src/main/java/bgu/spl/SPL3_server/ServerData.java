@@ -1,4 +1,4 @@
-package ThreadPerClientServer;
+package bgu.spl.SPL3_server;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;

@@ -1,7 +1,5 @@
-package ThreadPerClientServer;
+package bgu.spl.SPL3_server;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 public class Room implements Runnable {

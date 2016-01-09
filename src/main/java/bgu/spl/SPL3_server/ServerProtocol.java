@@ -1,5 +1,8 @@
-package Reactor;
+package bgu.spl.SPL3_server;
 
+
+import ThreadPerClientServer.ConnectionHandler;
+import ThreadPerClientServer.ProtocolCallback;
 
 /**
 * A protocol that describes the behaviour of the server .
@@ -14,7 +17,7 @@ public interface ServerProtocol <T > {
 * @param callback an instance of ProtocolCallback unique to the
 connection from which msg originated .
 */
-void processMessage ( T msg , ProtocolCallback <T > callback ) ;
+void processMessage ( T msg , ProtocolCallback<T > callback ) ;
 /**
 * Determine whether the given message is the termination message .
 *
@@ -22,7 +25,14 @@ void processMessage ( T msg , ProtocolCallback <T > callback ) ;
 * @return true if the message is the termination message , false
 otherwise
 */
+
 boolean isEnd ( T msg ) ;
 
+//to delete
+String processMessage(String msg);
 
+void setConnection(ConnectionHandler connection);
+ConnectionHandler getConnectionHandler();
+    void addPoints(int points);
+    int getPoints();
 }

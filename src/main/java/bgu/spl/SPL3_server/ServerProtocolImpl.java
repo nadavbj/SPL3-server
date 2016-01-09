@@ -1,8 +1,10 @@
-package ThreadPerClientServer;
+package bgu.spl.SPL3_server;
+
+import ThreadPerClientServer.ConnectionHandler;
+import ThreadPerClientServer.ProtocolCallback;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Set;
 
 public class ServerProtocolImpl implements ServerProtocol<String>  {
 
@@ -109,7 +111,7 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 
 			if (msg.startsWith(start)){
 				points=0;
-				if (msg.substring(start.length()+1).equals("BLUFFER")){
+				if (msg.substring(start.length()+1+1).equals("BLUFFER")){
 					ServerData.instance.getUsuer2room().get(name).userHittedStart();
 					String roomName= ServerData.instance.getUsuer2room().get(name).getRoomName();
 					//TODO:ServerData.instance.getRoomName2room().get(roomName).setActive();

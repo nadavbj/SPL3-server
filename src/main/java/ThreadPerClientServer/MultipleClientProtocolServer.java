@@ -2,6 +2,9 @@ package ThreadPerClientServer;
 
 
 	
+	import bgu.spl.SPL3_server.ServerData;
+	import bgu.spl.SPL3_server.ServerProtocolFactory;
+	import bgu.spl.SPL3_server.ServerProtocolFactoryImpl;
 	import org.json.simple.parser.ParseException;
 
 	import java.io.*;
@@ -12,10 +15,10 @@ package ThreadPerClientServer;
 	class MultipleClientProtocolServer implements Runnable {
 		private ServerSocket serverSocket;
 		private int listenPort;
-		private ServerProtocolFactoryImpl factory;
+		private ServerProtocolFactory factory;
 		
 		
-		public MultipleClientProtocolServer(int port, ServerProtocolFactoryImpl p)
+		public MultipleClientProtocolServer(int port, ServerProtocolFactory p)
 		{
 			serverSocket = null;
 			listenPort = port;

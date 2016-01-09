@@ -1,4 +1,4 @@
-package ThreadPerClientServer;
+package bgu.spl.SPL3_server;
 
 public class ServerProtocolFactoryImpl implements ServerProtocolFactory  {
 
