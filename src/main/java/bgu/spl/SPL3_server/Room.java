@@ -54,7 +54,7 @@ public class Room implements Runnable {
         for (ServerProtocol user : users
                 ) {
             if(user!=sender){
-                user.getConnectionHandler().sendMessage("new message from " + sender.getName() +": "+message,null,null);
+                user.getConnectionHandler().sendMessage("USRMSG new message from " + sender.getName() +": "+message,null,null);
             }
 
         }
@@ -66,7 +66,7 @@ public class Room implements Runnable {
     @Override
     public void run() {
         System.out.println("Room started");
-        for (int j = 0; j <1 ; j++)
+        for (int j = 0; j <3 ; j++)
         {
             Question q=ServerData.instance.getQuestion();
 
