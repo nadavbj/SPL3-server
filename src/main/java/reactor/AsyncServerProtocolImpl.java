@@ -136,8 +136,12 @@ public class AsyncServerProtocolImpl implements AsyncServerProtocol<String> {
                 if(ServerData.instance.getUsuer2room().get(name)!=null){
                     ServerData.instance.getUsuer2room().get(name).sendMSG(m,this);
                 }
+            }
+
             if(msg.equals("QUIT"))
+            {
                 shouldClose=true;
+                connectionHandler.close();
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block

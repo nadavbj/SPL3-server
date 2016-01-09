@@ -7,6 +7,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.net.SocketAddress;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 	protected final ReactorData<String> _data;
 
 	protected final AsyncServerProtocol<String> _protocol;
-	protected final MessageTokenizer<String> _tokenizer;
+	protected final MessageTokenizer _tokenizer;
 
 	protected Vector<ByteBuffer> _outData = new Vector<ByteBuffer>();
 
@@ -75,15 +76,16 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 		switchToReadWriteMode();
 	}
 
-	public synchronized void addOutData(String message) {
-		CharsetEncoder enc = Charset.forName("UTF-8").newEncoder();
-		try{
-			addOutData(enc.encode(CharBuffer.wrap(message)));
+	public synchronized void addOutData(Object message) {
+		try {
+			this.addOutData(_tokenizer.getBytesForMessage(new StringMessage((String)message)));
+		} catch (CharacterCodingException e) {
+			e.printStackTrace();
 		}
-		catch (Exception e){}
 	}
 
-	private void closeConnection() {
+	public void close() {
+		System.out.println("Connection closed - bye bye...");
 		// remove from the selector.
 		_skey.cancel();
 		try {
@@ -111,6 +113,7 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 		// do not read if protocol has terminated. only write of pending data is
 		// allowed
 		if (_protocol.shouldClose()) {
+			_skey.attach(null);
 			return;
 		}
 
@@ -128,7 +131,7 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 		if (numBytesRead == -1) {
 			// No more bytes can be read from the channel
 			logger.info("client on " + address + " has disconnected");
-			closeConnection();
+			close();
 			// tell the protocol that the connection terminated.
 			_protocol.connectionTerminated();
 			return;
@@ -176,7 +179,7 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 		if (_protocol.shouldClose()) {
 			switchToWriteOnlyMode();
 			if (buf.remaining() == 0) {
-				closeConnection();
+				close();
 				SocketAddress address = _sChannel.socket().getRemoteSocketAddress();
 				logger.info("disconnecting client on " + address);
 			}
@@ -229,10 +232,5 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 	@Override
 	public void run() {
 		initialize();
-
-
-
-		System.out.println("Connection closed - bye bye...");
-		closeConnection();
 	}
 }

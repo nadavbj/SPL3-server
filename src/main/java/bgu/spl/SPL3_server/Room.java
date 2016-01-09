@@ -11,9 +11,9 @@ public class Room implements Runnable {
 
     public Room(String roomName, boolean isActive) {
         this.roomName = roomName;
-        this.users = users;
         this.isActive = isActive;
         users=new HashSet<>();
+        System.out.println("room created");
     }
 
     public void add(ServerProtocol user){
@@ -65,9 +65,11 @@ public class Room implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("Room started");
         for (int j = 0; j <1 ; j++)
         {
             Question q=ServerData.instance.getQuestion();
+
             Object lockedObj=new Object();
             for (ServerProtocol protocol:users) {
                 protocol.getConnectionHandler().sendMessage("ASKTXT "+q.getQuestion(),"TXTRESP",(String ans)->{
