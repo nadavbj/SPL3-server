@@ -10,6 +10,7 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 	public void setName(String name) {
 		this.name = name;
 	}
+	public String getName(){return name;}
 
 	private final String nick="NICK";
 	private final String join="JOIN";
@@ -52,16 +53,16 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 				}
 				//the room is already exist, and not active
 				else if ((ServerData.instance.getRoomName2room().containsKey(msg.substring(5))) && !(ServerData.instance.getRoomName2room().get(msg.substring(5)).isActive()) ){
-					ServerData.instance.getRoomName2room().get(msg.substring(5)).add(name);
+					ServerData.instance.getRoomName2room().get(msg.substring(5)).add(this);
 					ServerData.instance.getUsuer2room().put(name, ServerData.instance.getRoomName2room().get(msg.substring(5)));
 					//ServerData.instance.getRoom2users().
 					callback.sendMessage("SYSMSG JOIN ACCEPTED");
 				}
 				//the room doesn't exist, will open a new one
 				else{
-					Room newRoom= new Room(msg.substring(5), new HashSet<String>(), false);
+					Room newRoom= new Room(msg.substring(5), new HashSet<ServerProtocolImpl>(), false);
 					ServerData.instance.getRoomName2room().put(msg.substring(5), newRoom);
-					ServerData.instance.getRoomName2room().get(msg.substring(5)).add(name);
+					ServerData.instance.getRoomName2room().get(msg.substring(5)).add(this);
 					ServerData.instance.getUsuer2room().put(name, newRoom);
 					callback.sendMessage("SYSMSG JOIN ACCEPTED");
 				}

@@ -7,12 +7,10 @@ import java.util.Set;
 public class ServerData {
 	private Map<String,Room> usuer2room;
 	private Map<String,Room> roomName2room;
-	private Map<Room, Set <String>> room2users;
-	
+
 
 	private ServerData(){
 		usuer2room= new HashMap();
-		room2users= new HashMap();
 		roomName2room=  new HashMap();
 	}
 	
@@ -35,14 +33,9 @@ public class ServerData {
 	}
 	
 
-	public Map<Room, Set<String>> getRoom2users() {
-		return room2users;
-	}
 
-	public void setRoom2users(Map<Room, Set<String>> room2users) {
-		this.room2users = room2users;
-	}
+	public String getQuestion(){
 
-	
+	}
 
 }

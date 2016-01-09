@@ -1,20 +1,23 @@
 package ThreadPerClientServer;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
-public class Room {
+public class Room implements Runnable {
 	private String roomName;
-	private Set<String> users;
+	private Set<ServerProtocolImpl> users;
 	private boolean isActive;
+	private Map<ServerProtocolImpl,String> answerPerPlayer;
 	
-	public Room(String roomName, Set<String> users, boolean isActive) {
+	public Room(String roomName, Set<ServerProtocolImpl> users, boolean isActive) {
 		this.roomName = roomName;
 		this.users = users;
 		this.isActive = isActive;
-		
+		answerPerPlayer =new HashMap();
 	}
 	
-	public void add(String user){
+	public void add(ServerProtocolImpl user){
 		users.add(user);
 		
 	}
@@ -23,7 +26,7 @@ public class Room {
 		return roomName;
 	}
 
-	public Set<String> getUsers() {
+	public Set<ServerProtocolImpl> getUsers() {
 		return users;
 	}
 
@@ -35,16 +38,19 @@ public class Room {
 		this.roomName = roomName;
 	}
 
-	public void setUsers(Set<String> users) {
+	public void setUsers(Set<ServerProtocolImpl> users) {
 		this.users = users;
 	}
 
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}
-	
-	
-	
-	
 
+
+	@Override
+	public void run() {
+		for (ServerProtocolImpl protocol:users) {
+			protocol.processMessage("ASKTXT "+question,ans->{answerPerPlayer.put(protocol,ans);});
+		}
+	}
 }
