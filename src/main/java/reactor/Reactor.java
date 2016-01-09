@@ -124,7 +124,7 @@ public class Reactor<T> implements Runnable {
             // Process each key
             while (it.hasNext()) {
                 // Get the selection key
-                SelectionKey selKey = (SelectionKey) it.next();
+                SelectionKey selKey = it.next();
 
                 // Remove it from the list to indicate that it is being
                 // processed. it.remove removes the last item returned by next.
@@ -193,11 +193,11 @@ public class Reactor<T> implements Runnable {
      * number of threads in the thread pool are read from the command line.
      */
     public static void main(String args[]) {
-        /*if (args.length != 2) {
-            System.err.println("Usage: java Reactor <port> <pool_size>");
+        if (args.length != 3) {
+            System.err.println("Usage: java Reactor <port> <pool_size> <json file path>");
             System.exit(1);
         }
-*/
+
         try {
             int port = Integer.parseInt(args[0]);
             int poolSize = Integer.parseInt(args[1]);
@@ -214,13 +214,12 @@ public class Reactor<T> implements Runnable {
     }
 
     public static Reactor<StringMessage> startEchoServer(int port, int poolSize) {
-        ServerProtocolFactory<StringMessage> protocolMaker = () -> new AsyncServerProtocolImpl();
+        ServerProtocolFactory<StringMessage> protocolMaker = AsyncServerProtocolImpl::new;
 
 
         final Charset charset = Charset.forName("UTF-8");
         TokenizerFactory<StringMessage> tokenizerMaker = () -> new FixedSeparatorMessageTokenizer("\n", charset);
 
-        Reactor<StringMessage> reactor = new Reactor<StringMessage>(port, poolSize, protocolMaker, tokenizerMaker);
-        return reactor;
+        return new Reactor<StringMessage>(port, poolSize, protocolMaker, tokenizerMaker);
     }
 }

@@ -9,9 +9,9 @@ public class Room implements Runnable {
     private Set<ServerProtocol> users;
     private boolean isActive;
 
-    public Room(String roomName, boolean isActive) {
+    public Room(String roomName) {
         this.roomName = roomName;
-        this.isActive = isActive;
+        this.isActive = false;
         users=new HashSet<>();
         System.out.println("room created");
     }
@@ -51,13 +51,9 @@ public class Room implements Runnable {
     }
 
     public void sendMSG(String message,ServerProtocol sender){
-        for (ServerProtocol user : users
-                ) {
-            if(user!=sender){
-                user.getConnectionHandler().sendMessage("USRMSG new message from " + sender.getName() +": "+message,null,null);
-            }
-
-        }
+        users.stream().filter(user -> user != sender).forEach(user -> {
+            user.getConnectionHandler().sendMessage("USRMSG new message from " + sender.getName() + ": " + message, null, null);
+        });
 
 
     }
@@ -65,7 +61,7 @@ public class Room implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Room started");
+        isActive=true;
         for (int j = 0; j <3 ; j++)
         {
             Question q=ServerData.instance.getQuestion();

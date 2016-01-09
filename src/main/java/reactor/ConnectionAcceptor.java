@@ -11,7 +11,7 @@ import java.nio.channels.SocketChannel;
  * objects, which can produce new SocketChannels for new clients using its
  * <CODE>accept</CODE> method.
  */
-public class ConnectionAcceptor {
+class ConnectionAcceptor {
 	protected ServerSocketChannel _ssChannel;
 
 	protected ReactorData<String> _data;

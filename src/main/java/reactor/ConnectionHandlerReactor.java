@@ -1,6 +1,5 @@
 package reactor;
 
-import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ClosedChannelException;
@@ -8,8 +7,6 @@ import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -34,7 +31,7 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 	protected final AsyncServerProtocol<String> _protocol;
 	protected final MessageTokenizer _tokenizer;
 
-	protected Vector<ByteBuffer> _outData = new Vector<ByteBuffer>();
+	protected Vector<ByteBuffer> _outData = new Vector();
 
 	protected final SelectionKey _skey;
 
@@ -76,9 +73,9 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 		switchToReadWriteMode();
 	}
 
-	public synchronized void addOutData(Object message) {
+	public synchronized void addOutData(String message) {
 		try {
-			this.addOutData(_tokenizer.getBytesForMessage(new StringMessage((String)message)));
+			this.addOutData(_tokenizer.getBytesForMessage(new StringMessage(message)));
 		} catch (CharacterCodingException e) {
 			e.printStackTrace();
 		}

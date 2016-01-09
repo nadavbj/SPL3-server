@@ -5,7 +5,6 @@ package ThreadPerClientServer;
 	import bgu.spl.SPL3_server.ConnectionHandler;
 	import bgu.spl.SPL3_server.ServerData;
 	import bgu.spl.SPL3_server.ServerProtocolFactory;
-	import reactor.AsyncServerProtocolFactoryImpl;
 	import org.json.simple.parser.ParseException;
 
 	import java.io.*;
@@ -64,7 +63,7 @@ package ThreadPerClientServer;
 		public static void main(String[] args) throws IOException
 		{
 			// Get port
-			int port = Integer.decode(args[0]).intValue();
+			int port = Integer.decode(args[0]);
 			//Load questions from json
 			try {
 				ServerData.instance.loadQuestionsFromJson(args[1]);

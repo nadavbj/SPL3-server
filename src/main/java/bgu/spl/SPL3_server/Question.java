@@ -9,10 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-;
-/**
- * Created by nadav on 09/01/16.
- */
+
 public class Question {
     public String getQuestion() {
         return question;
@@ -54,12 +51,10 @@ public class Question {
         // get an array from the JSON object
         JSONArray questionsJsonArray= (JSONArray) jsonObject.get("questions");
 
-        Iterator questionsArrayIterator = questionsJsonArray.iterator();
-
         // take each value from the json array separately
-        while (questionsArrayIterator.hasNext()) {
-            JSONObject questionJson = (JSONObject) questionsArrayIterator.next();
-            questions.add(new Question((String)questionJson.get("questionText"),(String)questionJson.get("realAnswer")));
+        for (Object aQuestionsJsonArray : questionsJsonArray) {
+            JSONObject questionJson = (JSONObject) aQuestionsJsonArray;
+            questions.add(new Question((String) questionJson.get("questionText"), (String) questionJson.get("realAnswer")));
         }
 
         return questions;

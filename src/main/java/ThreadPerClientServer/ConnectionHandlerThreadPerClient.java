@@ -15,9 +15,9 @@ public class ConnectionHandlerThreadPerClient  implements bgu.spl.SPL3_server.Co
 
 	private BufferedReader in;
 	private PrintWriter out;
-	Socket clientSocket;
-	ServerProtocol protocol;
-	private Map<String, ProtocolCallback> responsesCallBacks;
+	private Socket clientSocket;
+	private ServerProtocol protocol;
+	private Map<String, ProtocolCallback> responsesCallBacks = new HashMap();
 
 	public ConnectionHandlerThreadPerClient(Socket acceptedSocket, ServerProtocol p)
 	{
@@ -28,7 +28,6 @@ public class ConnectionHandlerThreadPerClient  implements bgu.spl.SPL3_server.Co
 		protocol.setConnection(this);
 		System.out.println("Accepted connection from client!");
 		System.out.println("The client is from: " + acceptedSocket.getInetAddress() + ":" + acceptedSocket.getPort());
-		responsesCallBacks=new HashMap();
 	}
 
 	public void run()
@@ -70,7 +69,7 @@ public class ConnectionHandlerThreadPerClient  implements bgu.spl.SPL3_server.Co
 			}
 			else
 			{
-				protocol.processMessage(msg,(response)->{out.println(response);});
+				protocol.processMessage(msg,(response)-> out.println(response));
 
 				if (protocol.isEnd(msg))
 				{

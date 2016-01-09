@@ -1,5 +1,5 @@
 package tokenizer;
 
-public interface Message<T> {
+interface Message<T> {
 
 }

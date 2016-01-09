@@ -70,8 +70,7 @@ public class FixedSeparatorMessageTokenizer implements StringMessageTokenizer {
 	public ByteBuffer getBytesForMessage(String msg)  throws CharacterCodingException {
 		StringBuilder sb = new StringBuilder(msg);
 		sb.append(this._messageSeparator);
-		ByteBuffer bb = this._encoder.encode(CharBuffer.wrap(sb));
-		return bb;
+		return this._encoder.encode(CharBuffer.wrap(sb));
 	}
 
 }
