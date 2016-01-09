@@ -2,6 +2,8 @@ package ThreadPerClientServer;
 
 
 	
+	import org.json.simple.parser.ParseException;
+
 	import java.io.*;
 	import java.net.*;
 
@@ -83,7 +85,13 @@ package ThreadPerClientServer;
 		{
 			// Get port
 			int port = Integer.decode(args[0]).intValue();
-			
+			//Load questions from json
+			try {
+				ServerData.instance.loadQuestionsFromJson(args[1]);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+
 			MultipleClientProtocolServer server = new MultipleClientProtocolServer(port, new ServerProtocolFactoryImpl());
 			Thread serverThread = new Thread(server);
 	      serverThread.start();
@@ -94,9 +102,9 @@ package ThreadPerClientServer;
 			{
 				System.out.println("Server stopped");
 			}
-			
-			
-					
+
+
+
 		}
 	}
 

@@ -1,13 +1,14 @@
 package ThreadPerClientServer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import org.json.simple.parser.ParseException;
+
+import java.io.IOException;
+import java.util.*;
 
 
 public class ServerData {
 	private Map<String,Room> usuer2room;
 	private Map<String,Room> roomName2room;
-
+	private Vector<Question> questions;
 
 	private ServerData(){
 		usuer2room= new HashMap();
@@ -21,21 +22,16 @@ public class ServerData {
 		return roomName2room;
 	}
 
-	public void setRoomName2room(Map<String, Room> roomName2room) {
-		this.roomName2room = roomName2room;
-	}
 	public Map<String, Room> getUsuer2room() {
 		return usuer2room;
 	}
 
-	public void setUsuer2room(Map<String, Room> usuer2room) {
-		this.usuer2room = usuer2room;
+	public void loadQuestionsFromJson(String jsonPath) throws IOException, ParseException {
+		questions=Question.parseJson(jsonPath);
 	}
-	
-
-
-	public String getQuestion(){
-
+	private int questionNumber=0;
+	public Question getQuestion(){
+		return questions.get((questionNumber++)%questions.size()).clone();
 	}
 
 }

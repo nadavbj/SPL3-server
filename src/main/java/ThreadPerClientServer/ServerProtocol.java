@@ -28,5 +28,8 @@ boolean isEnd ( T msg ) ;
 //to delete
 String processMessage(String msg);
 
-
+void setConnection(ConnectionHandler connection);
+ConnectionHandler getConnectionHandler();
+    void addPoints(int points);
+    int getPoints();
 }

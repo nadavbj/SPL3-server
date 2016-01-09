@@ -7,14 +7,18 @@ import java.util.Set;
 public class ServerProtocolImpl implements ServerProtocol<String>  {
 
 	private String name;
+	private int points=0;
 	public void setName(String name) {
 		this.name = name;
+		ServerData.instance.getUsuer2room().put(name,null);
 	}
 	public String getName(){return name;}
+	private ConnectionHandler connectionHandler;
 
 	private final String nick="NICK";
 	private final String join="JOIN";
 	private final String start="STARTGAME";
+	private final String ASKTXT="ASKTXT";
 
 
 	public String processMessage(String msg) {
@@ -23,15 +27,36 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 	}
 
 	@Override
+	public void setConnection(ConnectionHandler connection) {
+		connectionHandler=connection;
+	}
+
+	@Override
+	public ConnectionHandler getConnectionHandler() {
+		return connectionHandler;
+	}
+
+	@Override
+	public void addPoints(int points) {
+		getConnectionHandler().sendMessage("GAMEMSG you recived "+points+" points!",null,null);
+		this.points+=points;
+	}
+
+	@Override
+	public int getPoints() {
+		return points;
+	}
+
+	@Override
 	public void processMessage(String msg, ProtocolCallback<String> callback) {
-		
+		msg=msg.trim();
 		try {
 
 			/** NICK  **/
 			if(msg.startsWith(nick)) 
 				//the user is already in use
 				if (ServerData.instance.getUsuer2room().containsKey(msg.substring(5))){
-					callback.sendMessage("SYSMSG NICK REJECTED, "+ msg.substring(5)+ "is already in use");
+					callback.sendMessage("SYSMSG NICK REJECTED, "+ msg.substring(5)+ " is already in use");
 				}
 			//Creates a new user
 				else {
@@ -42,7 +67,7 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 			/** JOIN  **/
 			if(msg.startsWith(join)){
 				
-				if(ServerData.instance.getUsuer2room().containsKey(name) && ServerData.instance.getUsuer2room().get(name).isActive()){
+				if(ServerData.instance.getUsuer2room().containsKey(name) &&ServerData.instance.getUsuer2room().get(name)!=null&& ServerData.instance.getUsuer2room().get(name).isActive()){
 					callback.sendMessage("SYSMSG JOIN REJECTED, you can't leave in the middle of a game");
 					
 				}
@@ -54,7 +79,7 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 				//the room is already exist, and not active
 				else if ((ServerData.instance.getRoomName2room().containsKey(msg.substring(5))) && !(ServerData.instance.getRoomName2room().get(msg.substring(5)).isActive()) ){
 					ServerData.instance.getRoomName2room().get(msg.substring(5)).add(this);
-					ServerData.instance.getUsuer2room().put(name, ServerData.instance.getRoomName2room().get(msg.substring(5)));
+					ServerData.instance.getUsuer2room().replace(name, ServerData.instance.getRoomName2room().get(msg.substring(5)));
 					//ServerData.instance.getRoom2users().
 					callback.sendMessage("SYSMSG JOIN ACCEPTED");
 				}
@@ -63,7 +88,7 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 					Room newRoom= new Room(msg.substring(5), new HashSet<ServerProtocolImpl>(), false);
 					ServerData.instance.getRoomName2room().put(msg.substring(5), newRoom);
 					ServerData.instance.getRoomName2room().get(msg.substring(5)).add(this);
-					ServerData.instance.getUsuer2room().put(name, newRoom);
+					ServerData.instance.getUsuer2room().replace(name, newRoom);
 					callback.sendMessage("SYSMSG JOIN ACCEPTED");
 				}
 			}
@@ -72,18 +97,15 @@ public class ServerProtocolImpl implements ServerProtocol<String>  {
 
 
 			if (msg.startsWith(start)){
-				
+				points=0;
 				if (msg.substring(10).equals("BLUFFER")){
-					ServerData.instance.getUsuer2room().get(name).setActive(true);
+					ServerData.instance.getUsuer2room().get(name).userHittedStart();
 					String roomName= ServerData.instance.getUsuer2room().get(name).getRoomName();
-					ServerData.instance.getRoomName2room().get(roomName).setActive(true);
+					//TODO:ServerData.instance.getRoomName2room().get(roomName).setActive();
 					callback.sendMessage("SYSMSG STARTGAME ACCEPTED");
 				}
 				else callback.sendMessage("SYSMSG STARTGAME REJECTED, "+ "we don't have the game " + msg.substring(9));
 			}
-
-
-
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

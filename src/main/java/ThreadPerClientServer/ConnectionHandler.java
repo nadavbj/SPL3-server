@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 class ConnectionHandler implements Runnable {
 	
@@ -13,6 +15,7 @@ class ConnectionHandler implements Runnable {
 	private PrintWriter out;
 	Socket clientSocket;
 	ServerProtocol protocol;
+	private Map<String, ProtocolCallback> responsesCallBacks;
 	
 	public ConnectionHandler(Socket acceptedSocket, ServerProtocol p)
 	{
@@ -20,8 +23,10 @@ class ConnectionHandler implements Runnable {
 		out = null;
 		clientSocket = acceptedSocket;
 		protocol = p;
+		protocol.setConnection(this);
 		System.out.println("Accepted connection from client!");
 		System.out.println("The client is from: " + acceptedSocket.getInetAddress() + ":" + acceptedSocket.getPort());
+		responsesCallBacks=new HashMap();
 	}
 	
 	public void run()
@@ -52,18 +57,38 @@ class ConnectionHandler implements Runnable {
 	{
 		String msg;
 		
-		while ((msg = in.readLine()) != null)
+		while ((msg = in.readLine()) != null && !msg.equals("QUIT"))
 		{
+			msg=msg.trim();
+
 			System.out.println("Received \"" + msg + "\" from client");
-			
-			protocol.processMessage(msg,(response)->{out.println(response);});
-			
-			if (protocol.isEnd(msg))
-			{
-				break;
+			String command=msg.substring(0,msg.indexOf(" "));
+			if(responsesCallBacks.containsKey(command)){
+				responsesCallBacks.get(command).sendMessage(msg.substring(msg.indexOf(" ")));
+				responsesCallBacks.remove(command);
 			}
+			else
+			{
+				protocol.processMessage(msg,(response)->{out.println(response);});
+
+				if (protocol.isEnd(msg))
+				{
+					break;
+				}
+			}
+
 			
 		}
+
+	}
+
+	/*
+	Sends the message and activate the callback when the client response recived
+	 */
+	public void sendMessage(String message, String responseCommannd, ProtocolCallback<String> callback){
+		out.println(message);
+		if(responseCommannd!=null)
+			responsesCallBacks.put(responseCommannd,callback);
 	}
 	
 	// Starts listening
