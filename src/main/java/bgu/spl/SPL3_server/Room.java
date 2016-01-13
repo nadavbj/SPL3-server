@@ -11,6 +11,10 @@ public class Room{
     private String roomName;
     private Set<ServerProtocol> users;
     private boolean isActive;
+    private int awaitingAnswers;
+    private int leftQuestions;
+    private static final int NumOfQuestionsPerGame=3;
+    private int usersWhoHittedStart=0;
 
     public Room(String roomName) {
         this.roomName = roomName;
@@ -28,25 +32,21 @@ public class Room{
         return isActive;
     }
 
-    private int usersWhoHittedStart=0;
     public void userHittedStart() {
         usersWhoHittedStart++;
         if(usersWhoHittedStart==users.size()){
             isActive=true;
+            leftQuestions=NumOfQuestionsPerGame;
             askQuestion();
         }
     }
 
     public void sendMSG(String message,ServerProtocol sender){
-        users.stream().filter(user -> user != sender).forEach(user -> {
-            user.sendMessage("USRMSG new message from " + sender.getName() + ": " + message, null, null);
-        });
+        users.stream().filter(user -> user != sender).forEach(user -> user.sendMessage("USRMSG new message from " + sender.getName() + ": " + message, null, null));
 
 
     }
-    private int awaitingAnswers;
-    private int leftQuestions=1;
-    Object lockedObj=new Object();
+
 
     private void askQuestion(){
         leftQuestions--;
@@ -58,9 +58,8 @@ public class Room{
                 @Override
                 public void sendMessage(String ans) throws IOException {
                     q.addAnswer(ans, protocol);
-                    synchronized (lockedObj) {
-                        awaitingAnswers--;
-                    }
+                    awaitingAnswers--;
+
                     if (awaitingAnswers == 0) {
                         Room.this.askChoices(q);
                     }
@@ -76,9 +75,8 @@ public class Room{
                 @Override
                 public void sendMessage(String ans) throws IOException {
                     q.selectAnswer(Integer.parseInt(ans.trim()), protocol);
-                    synchronized (lockedObj) {
-                        awaitingAnswers--;
-                    }
+                    awaitingAnswers--;
+
 
                     if(awaitingAnswers==0)
                         if(leftQuestions==0)
@@ -111,6 +109,5 @@ public class Room{
         }
         users.clear();
         usersWhoHittedStart=0;
-        leftQuestions=1;
     }
 }
