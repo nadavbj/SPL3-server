@@ -6,12 +6,6 @@ package bgu.spl.SPL3_server;
  */
 public interface AsyncServerProtocol<T> extends ServerProtocol<T> {
 
-	/**
-	 * processes a message
-	 * @param msg the message to process
-	 * @return the reply that should be sent to the client, or null if no reply needed
-	 */
-	T processMessage(T msg);
 
 	/**
 	 * detetmine whether the given message is the termination message

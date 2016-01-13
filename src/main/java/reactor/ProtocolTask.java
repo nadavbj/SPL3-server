@@ -11,7 +11,7 @@ import tokenizer.*;
 /**
  * This class supplies some data to the protocol, which then processes the data,
  * possibly returning a reply. This class is implemented as an executor task.
- * 
+ *
  */
 public class ProtocolTask implements Runnable {
 
@@ -28,45 +28,39 @@ public class ProtocolTask implements Runnable {
 	// we synchronize on ourselves, in case we are executed by several threads
 	// from the thread pool.
 	public synchronized void run() {
-      // go over all complete messages and process them.
-      while (_tokenizer.hasMessage()) {
-         String msg = ((StringMessage)_tokenizer.nextMessage()).getMessage();
-		  {
-			  msg=msg.trim();
-			  System.out.println("Received \"" + msg + "\" from client");
-			  String command;
-			  if(msg.contains(" "))
-				  command=msg.substring(0,msg.indexOf(" "));
-			  else
-				  command=msg;
-			  if(_protocol.getConnectionHandler().getResponsesCallBacks().containsKey(command)){
-				  try {
-					  _protocol.getConnectionHandler().getResponsesCallBacks().get(command).sendMessage(msg.substring(msg.indexOf(" ")));
-				  } catch (IOException e) {
-					  e.printStackTrace();
-				  }
-				  _protocol.getConnectionHandler().getResponsesCallBacks().remove(command);
-			  }
-			  else
-			  {
-				  _protocol.processMessage(msg,(response)->{
-					  if (response != null) {
-					  try {
-						  ByteBuffer bytes = _tokenizer.getBytesForMessage(new StringMessage((String)response));
-						  this._handler.addOutData(bytes);
-					  } catch (CharacterCodingException e) { e.printStackTrace(); }
-				  }});
+		// go over all complete messages and process them.
+		while (_tokenizer.hasMessage()) {
+			String msg = ((StringMessage)_tokenizer.nextMessage()).getMessage();
+			{
+				msg=msg.trim();
+				if (_protocol.getName()!=null){
+					System.out.println("Received \"" + msg + "\" from "+_protocol.getName());
+				}
+				else System.out.println("Received \"" + msg + "\" from client");
+				String command;
+				if(msg.contains(" "))
+					command=msg.substring(0,msg.indexOf(" "));
+				else
+					command=msg;
 
-				  if (_protocol.isEnd(msg))
-				  {
-					  break;
-				  }
-			  }
+				_protocol.processMessage(msg,(response)->{
+					if (response != null) {
+						try {
+							ByteBuffer bytes = _tokenizer.getBytesForMessage(new StringMessage((String)response));
+							this._handler.addOutData(bytes);
+						} catch (CharacterCodingException e) { e.printStackTrace(); }
+					}});
+
+				if (_protocol.isEnd(msg))
+				{
+					break;
+				}
+			}
 
 
-		  }
-      }
+		}
 	}
+
 
 	public void addBytes(ByteBuffer b) {
 		_tokenizer.addBytes(b);

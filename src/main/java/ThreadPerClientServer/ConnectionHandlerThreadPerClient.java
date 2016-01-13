@@ -17,7 +17,6 @@ public class ConnectionHandlerThreadPerClient  implements bgu.spl.SPL3_server.Co
 	private PrintWriter out;
 	private Socket clientSocket;
 	private ServerProtocol protocol;
-	private Map<String, ProtocolCallback> responsesCallBacks = new HashMap();
 
 	public ConnectionHandlerThreadPerClient(Socket acceptedSocket, ServerProtocol p)
 	{
@@ -25,7 +24,6 @@ public class ConnectionHandlerThreadPerClient  implements bgu.spl.SPL3_server.Co
 		out = null;
 		clientSocket = acceptedSocket;
 		protocol = p;
-		protocol.setConnection(this);
 		System.out.println("Accepted connection from client!");
 		System.out.println("The client is from: " + acceptedSocket.getInetAddress() + ":" + acceptedSocket.getPort());
 	}
@@ -46,7 +44,7 @@ public class ConnectionHandlerThreadPerClient  implements bgu.spl.SPL3_server.Co
 			System.out.println("Error in I/O");
 		}
 
-		System.out.println("Connection closed - bye bye...");
+		System.out.println("Connection with "+protocol.getName()+" closed - bye bye...");
 		close();
 	}
 
@@ -57,18 +55,11 @@ public class ConnectionHandlerThreadPerClient  implements bgu.spl.SPL3_server.Co
 		while ((msg = in.readLine()) != null )
 		{
 			msg=msg.trim();
-			System.out.println("Received \"" + msg + "\" from client");
-			String command;
-			if(msg.contains(" "))
-				command=msg.substring(0,msg.indexOf(" "));
-			else
-				command=msg;
-			if(responsesCallBacks.containsKey(command)){
-				responsesCallBacks.get(command).sendMessage(msg.substring(msg.indexOf(" ")));
-				responsesCallBacks.remove(command);
+			if (protocol.getName()!=null){
+			System.out.println("Received \"" + msg + "\" from "+protocol.getName());
 			}
-			else
-			{
+			else System.out.println("Received \"" + msg + "\" from client");
+
 				protocol.processMessage(msg,(response)-> out.println(response));
 
 				if (protocol.isEnd(msg))
@@ -76,25 +67,9 @@ public class ConnectionHandlerThreadPerClient  implements bgu.spl.SPL3_server.Co
 					break;
 				}
 			}
-
-
-		}
-
 	}
 
-	/*
-	Sends the message and activate the callback when the client response recived
-	 */
-	public void sendMessage(String message, String responseCommannd, ProtocolCallback<String> callback){
-		out.println(message);
-		if(responseCommannd!=null)
-			responsesCallBacks.put(responseCommannd,callback);
-	}
 
-	@Override
-	public Map<String, ProtocolCallback> getResponsesCallBacks() {
-		return responsesCallBacks;
-	}
 
 	// Starts listening
 	public void initialize() throws IOException

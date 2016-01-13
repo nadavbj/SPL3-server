@@ -1,10 +1,13 @@
 package bgu.spl.SPL3_server;
 
 
+import ThreadPerClientServer.ProtocolCallback;
+
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Room implements Runnable {
+public class Room{
     private String roomName;
     private Set<ServerProtocol> users;
     private boolean isActive;
@@ -21,24 +24,8 @@ public class Room implements Runnable {
 
     }
 
-    public String getRoomName() {
-        return roomName;
-    }
-
-    public Set<ServerProtocol> getUsers() {
-        return users;
-    }
-
     public boolean isActive() {
         return isActive;
-    }
-
-    public void setRoomName(String roomName) {
-        this.roomName = roomName;
-    }
-
-    public void setUsers(Set<ServerProtocol> users) {
-        this.users = users;
     }
 
     private int usersWhoHittedStart=0;
@@ -46,84 +33,84 @@ public class Room implements Runnable {
         usersWhoHittedStart++;
         if(usersWhoHittedStart==users.size()){
             isActive=true;
-            new Thread(this).start();
+            askQuestion();
         }
     }
 
     public void sendMSG(String message,ServerProtocol sender){
         users.stream().filter(user -> user != sender).forEach(user -> {
-            user.getConnectionHandler().sendMessage("USRMSG new message from " + sender.getName() + ": " + message, null, null);
+            user.sendMessage("USRMSG new message from " + sender.getName() + ": " + message, null, null);
         });
 
 
     }
+    private int awaitingAnswers;
+    private int leftQuestions=1;
+    Object lockedObj=new Object();
 
+    private void askQuestion(){
+        leftQuestions--;
+        awaitingAnswers=users.size();
+        Question q=ServerData.instance.getQuestion();
 
-    @Override
-    public void run() {
-        isActive=true;
-        for (int j = 0; j <3 ; j++)
-        {
-            Question q=ServerData.instance.getQuestion();
-
-            Object lockedObj=new Object();
-            for (ServerProtocol protocol:users) {
-                protocol.getConnectionHandler().sendMessage("ASKTXT "+q.getQuestion(),"TXTRESP",(String ans)->{
-                    q.addAnswer(ans,protocol);
-                    synchronized (lockedObj){
-                        lockedObj.notify();
+        for (ServerProtocol protocol:users) {
+            protocol.sendMessage("ASKTXT "+q.getQuestion(),"TXTRESP", new ProtocolCallback<String>() {
+                @Override
+                public void sendMessage(String ans) throws IOException {
+                    q.addAnswer(ans, protocol);
+                    synchronized (lockedObj) {
+                        awaitingAnswers--;
                     }
-
-                });
-            }
-            for (int i = 0; i < users.size(); i++) {
-                try {
-                    synchronized (lockedObj){
-                        lockedObj.wait();
+                    if (awaitingAnswers == 0) {
+                        Room.this.askChoices(q);
                     }
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
-            }
-            for (ServerProtocol protocol:users) {
-                protocol.getConnectionHandler().sendMessage("ASKCHOICES "+q.getAnswerShuffle(),"SELECTRESP",(String ans)->{
-                    q.selectAnswer(Integer.parseInt(ans.trim()),protocol);
-                    synchronized (lockedObj){
-                        lockedObj.notify();
-                    }
-                });
-            }
-            for (int i = 0; i < users.size(); i++) {
-                try {
-                    synchronized (lockedObj){
-                        lockedObj.wait();
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
+            });
         }
-        int maxPoints=0;
+    }
+    void askChoices(Question q)
+    {
+        awaitingAnswers=users.size();
+        for (ServerProtocol protocol:users) {
+            protocol.sendMessage("ASKCHOICES "+q.getAnswerShuffle(),"SELECTRESP", new ProtocolCallback<String>() {
+                @Override
+                public void sendMessage(String ans) throws IOException {
+                    q.selectAnswer(Integer.parseInt(ans.trim()), protocol);
+                    synchronized (lockedObj) {
+                        awaitingAnswers--;
+                    }
+
+                    if(awaitingAnswers==0)
+                        if(leftQuestions==0)
+                            finish();
+                        else
+                        {
+                            askQuestion();
+                        }
+                }
+            });
+        }
+    }
+    private void finish() {
+        int maxPoints = 0;
         for (ServerProtocol user : users) {
-            if(user.getPoints()>=maxPoints){
-                maxPoints=user.getPoints();
+            if (user.getPoints() >= maxPoints) {
+                maxPoints = user.getPoints();
             }
         }
-        for(ServerProtocol user : users) {
-            if(user.getPoints()==maxPoints){
-                user.getConnectionHandler().sendMessage("GAMEMSG You won!",null,null);
-            }
-            else
-            {
-                user.getConnectionHandler().sendMessage("GAMEMSG You losed! ha ha",null,null);
+        for (ServerProtocol user : users) {
+            if (user.getPoints() == maxPoints) {
+                user.sendMessage("GAMEMSG You won!", null, null);
+            } else {
+                user.sendMessage("GAMEMSG You losed! ha ha", null, null);
             }
         }
-        isActive=false;
-        for(ServerProtocol user : users) {
-            ServerData.instance.getUsuer2room().replace(user.getName(),null);
+        isActive = false;
+        for (ServerProtocol user : users) {
+            ServerData.instance.getUsuer2room().replace(user.getName(), null);
         }
         users.clear();
+        usersWhoHittedStart=0;
+        leftQuestions=1;
     }
 }

@@ -6,13 +6,11 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.net.SocketAddress;
-import java.nio.charset.CharacterCodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import ThreadPerClientServer.ProtocolCallback;
 import bgu.spl.SPL3_server.AsyncServerProtocol;
 import bgu.spl.SPL3_server.ConnectionHandler;
 import tokenizer.*;
@@ -31,14 +29,13 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 	protected final AsyncServerProtocol<String> _protocol;
 	protected final MessageTokenizer _tokenizer;
 
-	protected Vector<ByteBuffer> _outData = new Vector();
+	protected Vector<ByteBuffer> _outData;
 
 	protected final SelectionKey _skey;
 
 	private static final Logger logger = Logger.getLogger("edu.spl.reactor");
 
 	private ProtocolTask _task = null;
-	private Map<String, ProtocolCallback> responsesCallBacks=new HashMap();
 	/**
 	 * Creates a new ConnectionHandler object
 	 *
@@ -51,9 +48,9 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 		_sChannel = sChannel;
 		_data = data;
 		_protocol = (AsyncServerProtocol) _data.getProtocolMaker().create();
-		_protocol.setConnection(this);
 		_tokenizer = _data.getTokenizerMaker().create();
 		_skey = key;
+		_outData = new Vector<>();
 	}
 
 	// make sure 'this' does not escape b4 the object is fully constructed!
@@ -73,13 +70,6 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 		switchToReadWriteMode();
 	}
 
-	public synchronized void addOutData(String message) {
-		try {
-			this.addOutData(_tokenizer.getBytesForMessage(new StringMessage(message)));
-		} catch (CharacterCodingException e) {
-			e.printStackTrace();
-		}
-	}
 
 	public void close() {
 		System.out.println("Connection closed - bye bye...");
@@ -216,16 +206,6 @@ public class ConnectionHandlerReactor implements ConnectionHandler {
 		_data.getSelector().wakeup();
 	}
 
-	@Override
-	public void sendMessage(String message, String responseCommannd, ProtocolCallback<String> callback) {
-		addOutData(message);
-		if(responseCommannd!=null)
-			responsesCallBacks.put(responseCommannd,callback);
-	}
-	@Override
-	public Map<String, ProtocolCallback> getResponsesCallBacks() {
-		return responsesCallBacks;
-	}
 	@Override
 	public void run() {
 		initialize();

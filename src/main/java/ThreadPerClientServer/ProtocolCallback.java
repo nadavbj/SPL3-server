@@ -1,6 +1,8 @@
 package ThreadPerClientServer;
 
 
+import java.io.IOException;
+
 /**
 * An interface that bridges between the protocol and the server .
 * The server should implement this interface , and pass an instance of it
